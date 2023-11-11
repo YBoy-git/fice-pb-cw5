@@ -2,9 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define MAX_STRING_LENGTH 100
 #define MAX_STRINGS_QUANTITY 100
+
+const char inputTypes[] = {'u', 'r', '\0'};
 
 void clearIB()
 {
@@ -12,13 +15,13 @@ void clearIB()
         ;
 }
 
-void getInput(void *input, char *format, const char *message)
+void getInput(void *input, char *format, const char *prompt)
 {
     char temp = 0;
 
     do
     {
-        printf("%s", message);
+        printf("%s", prompt);
         int status = scanf(format, input);
         if (*((char *)input) == '\n')
         {
@@ -44,7 +47,12 @@ void swapStrings(char *string1, char *string2)
     size_t string1Length = strlen(string1);
     size_t string2Length = strlen(string2);
     size_t maxLength = (string1Length > string2Length) ? string1Length : string2Length;
-    char *temp = malloc((maxLength + 1) * sizeof(char));
+
+    char *temp = calloc(maxLength + 1, sizeof(char));
+
+    string1 = realloc(string1, (string2Length + 1) * sizeof(char));
+    string2 = realloc(string2, (string1Length + 1) * sizeof(char));
+
     strcpy(temp, string1);
     strcpy(string1, string2);
     strcpy(string2, temp);
@@ -84,7 +92,25 @@ void printStrings(char **strings, size_t stringsQuantity)
     return;
 }
 
-bool isInputValid(char *input, size_t maxLength)
+bool isOptionValid(char choice, const char *options)
+{
+    if (!strchr(options, choice))
+    {
+        printf("Invalid option, try again\n");
+        return false;
+    }
+    return true;
+}
+
+void getOption(char *choice, const char *options, const char *prompt)
+{
+    do
+    {
+        getInput(choice, "%c", prompt);
+    } while (!isOptionValid(*choice, options));
+}
+
+bool isStringValid(char *input, size_t maxLength)
 {
     size_t inputLength = strlen(input);
     if (inputLength >= maxLength - 1)
@@ -110,7 +136,7 @@ void getString(char *string, size_t maxInputLength)
     {
         // max string length + \n + \0 in ideal string
         fgets(input, maxInputLength, stdin);
-    } while (!isInputValid(input, maxInputLength));
+    } while (!isStringValid(input, maxInputLength));
 
     input[strlen(input) - 1] = '\0';
     strcpy(string, input);
@@ -119,10 +145,10 @@ void getString(char *string, size_t maxInputLength)
 }
 
 // Returns quantity of input strings
-size_t getStrings(char **strings)
+size_t getStringsFromUser(char **strings)
 {
     size_t stringsQuantity = 0;
-    char *input = malloc((MAX_STRING_LENGTH) * sizeof(char));
+    char *input = malloc((MAX_STRING_LENGTH + 1) * sizeof(char));
 
     do
     {
@@ -130,7 +156,7 @@ size_t getStrings(char **strings)
         {
             printf("You've entered %zu string(s)\n", stringsQuantity);
         }
-        printf("Enter a string or press ENTER to stop input\n");
+        printf("Enter up to %d strings (with max length %d) or press ENTER to stop input \n", MAX_STRINGS_QUANTITY, MAX_STRING_LENGTH);
 
         getString(input, MAX_STRING_LENGTH);
         printf("\n");
@@ -141,9 +167,126 @@ size_t getStrings(char **strings)
             strcpy(strings[stringsQuantity], input);
             stringsQuantity++;
         }
-    } while (strlen(input) != 0 && stringsQuantity < 100);
+
+        if (strlen(input) == 0 && stringsQuantity == 0)
+        {
+            printf("Please, pass at least 1 string\n");
+            continue;
+        }
+    } while ((strlen(input) != 0 && stringsQuantity < MAX_STRINGS_QUANTITY) || stringsQuantity == 0);
+
+    free(input);
 
     return stringsQuantity;
+}
+
+bool isStringsLengthValid(size_t stringsLength)
+{
+    if (stringsLength == 0)
+    {
+        printf("Can't generate 0-length strings\n");
+        return false;
+    }
+    if (stringsLength > MAX_STRING_LENGTH)
+    {
+        printf("Too big string length\n");
+        return false;
+    }
+
+    return true;
+}
+
+void getStringsLength(size_t *stringsLength)
+{
+    char prompt[40];
+    sprintf(prompt, "Enter string length (max %d): ", MAX_STRING_LENGTH);
+
+    do
+    {
+        getInput(stringsLength, "%zu", prompt);
+    } while (!isStringsLengthValid(*stringsLength));
+
+    return;
+}
+
+bool isStringsQuantityValid(size_t stringsQuantity)
+{
+    if (stringsQuantity == 0)
+    {
+        printf("Can't generate 0 strings\n");
+        return false;
+    }
+    if (stringsQuantity > MAX_STRINGS_QUANTITY)
+    {
+        printf("Too many strings\n");
+        return false;
+    }
+
+    return true;
+}
+
+void getStringsQuantity(size_t *stringsQuantity)
+{
+    char prompt[70];
+    sprintf(prompt, "How many strings would you like to generate? (max %d): ", MAX_STRINGS_QUANTITY);
+    do
+    {
+        getInput(stringsQuantity, "%zu", prompt);
+    } while (!isStringsQuantityValid(*stringsQuantity));
+
+    return;
+}
+
+char getRandomChar()
+{
+    const int min = 32;
+    const int max = 126;
+    const int range = max - min + 1;
+    return rand() % range + min;
+}
+
+void generateRandomString(char *string, size_t stringLength)
+{
+    for (int i = 0; i < stringLength; i++)
+    {
+        string[i] = getRandomChar();
+    }
+    string[stringLength] = '\0';
+
+    return;
+}
+
+size_t getRandomStrings(char **strings, size_t stringsLength, size_t stringsQuantity)
+{
+    for (int i = 0; i < stringsQuantity; i++)
+    {
+        strings[i] = malloc((stringsLength + 1) * sizeof(char));
+        generateRandomString(strings[i], stringsLength);   
+    }
+
+    return stringsQuantity;
+}
+
+size_t getStrings(char ***strings, char input)
+{
+    if (input == 'u')
+    {
+        *strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
+        return getStringsFromUser(*strings);
+    }
+    else if (input == 'r')
+    {
+        size_t stringsLength = 0;
+        getStringsLength(&stringsLength);
+
+        size_t stringsQuantity = 0;
+        getStringsQuantity(&stringsQuantity);
+        *strings = malloc(stringsQuantity * sizeof(char *));
+        
+        return getRandomStrings(*strings, stringsLength, stringsQuantity);
+    }
+
+    return 0;
 }
 
 void freeStrings(char **strings, size_t stringsQuantity)
@@ -157,16 +300,25 @@ void freeStrings(char **strings, size_t stringsQuantity)
 
 void UI()
 {
-    char **strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
-    size_t stringsQuantity = getStrings(strings);
-    if (stringsQuantity == 0)
-    {
-        printf("I can't work with empty arrays\n");
-        return;
-    }
-    sortStrings(strings, stringsQuantity, 1);
+    char inputType = 0;
+    getOption(&inputType, inputTypes, "Enter input type (u - user input, r - random): ");
+
+    char **strings = NULL;
+    size_t stringsQuantity = getStrings(&strings, inputType);
+    printf("%c\n", strings[0][0]);
+
+    printf("--- Input strings:\n");
     printStrings(strings, stringsQuantity);
+    printf("\n");
+
+    sortStrings(strings, stringsQuantity, 1);
+
+    printf("--- Sorted strings:\n");
+    printStrings(strings, stringsQuantity);
+    printf("\n");
+
     freeStrings(strings, stringsQuantity);
+
     return;
 }
 
@@ -181,9 +333,48 @@ void endless(void (*function)())
     return;
 }
 
+void test_swapStrings() 
+{
+    char *str1 = malloc(10 * sizeof(char));
+    char *str2 = malloc(5 * sizeof(char));
+    strcpy(str1, "123456789");
+    strcpy(str2, "1234");
+    swapStrings(str1, str2);
+    printf("%s\n", str1);
+    printf("%s\n", str2);
+    free(str1);
+    free(str2);
+    return;
+}
+
+void test_getString()
+{
+    char *string = malloc(11 * sizeof(char));
+    getString(string, 10);
+    printf("%s\n", string);
+    free(string);
+    return;
+}
+
+void test_getStringsFromUser()
+{
+    char **strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
+    
+    size_t stringsQuantity = getStringsFromUser(strings);
+    printStrings(strings, stringsQuantity);
+    freeStrings(strings, stringsQuantity);
+    return;
+}
+
 int main()
 {
-    endless(UI);    
+    srand(time(NULL));
+    
+    endless(UI);
+
+    // test_swapStrings();
+    // test_getString();
+    // test_getStringsFromUser();
 
     return 0;
 }
