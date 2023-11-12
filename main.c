@@ -8,6 +8,7 @@
 #define MAX_STRINGS_QUANTITY 100
 
 const char inputTypes[] = {'u', 'r', '\0'};
+const char sortingTypes[] = {'a', 'd', '\0'};
 
 void clearIB()
 {
@@ -276,13 +277,13 @@ size_t getStrings(char ***strings, char input)
     }
     else if (input == 'r')
     {
-        size_t stringsLength = 0;
-        getStringsLength(&stringsLength);
-
         size_t stringsQuantity = 0;
         getStringsQuantity(&stringsQuantity);
         *strings = malloc(stringsQuantity * sizeof(char *));
         
+        size_t stringsLength = 0;
+        getStringsLength(&stringsLength);
+
         return getRandomStrings(*strings, stringsLength, stringsQuantity);
     }
 
@@ -310,7 +311,10 @@ void UI()
     printStrings(strings, stringsQuantity);
     printf("\n");
 
-    sortStrings(strings, stringsQuantity, 1);
+    char sortingType = 0;
+    getOption(&sortingType, sortingTypes, "Enter sorting type (a - ascending, d - descending): ");
+
+    sortStrings(strings, stringsQuantity, (sortingType == 'a') ? 1 : -1);
 
     printf("--- Sorted strings:\n");
     printStrings(strings, stringsQuantity);
