@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define MAX_STRING_LENGTH 100
+#define MAX_STRING_LENGTH 3
 #define MAX_STRINGS_QUANTITY 100
 
 const char inputTypes[] = {'u', 'r', '\0'};
@@ -262,7 +262,7 @@ size_t getRandomStrings(char **strings, size_t stringsLength, size_t stringsQuan
     for (int i = 0; i < stringsQuantity; i++)
     {
         strings[i] = malloc((stringsLength + 1) * sizeof(char));
-        generateRandomString(strings[i], stringsLength);   
+        generateRandomString(strings[i], stringsLength);
     }
 
     return stringsQuantity;
@@ -270,24 +270,24 @@ size_t getRandomStrings(char **strings, size_t stringsLength, size_t stringsQuan
 
 size_t getStrings(char ***strings, char input)
 {
-    if (input == 'u')
+    switch (input)
     {
+    case 'u':
         *strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
         return getStringsFromUser(*strings);
-    }
-    else if (input == 'r')
-    {
+    case 'r':
         size_t stringsQuantity = 0;
         getStringsQuantity(&stringsQuantity);
         *strings = malloc(stringsQuantity * sizeof(char *));
-        
+
         size_t stringsLength = 0;
         getStringsLength(&stringsLength);
 
         return getRandomStrings(*strings, stringsLength, stringsQuantity);
+    default:
+        printf("Invalid input type\n");
+        return 0;
     }
-
-    return 0;
 }
 
 void freeStrings(char **strings, size_t stringsQuantity)
@@ -336,7 +336,7 @@ void endless(void (*function)())
     return;
 }
 
-void test_swapStrings() 
+void test_swapStrings()
 {
     char *str1 = malloc(10 * sizeof(char));
     char *str2 = malloc(5 * sizeof(char));
@@ -362,7 +362,7 @@ void test_getString()
 void test_getStringsFromUser()
 {
     char **strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
-    
+
     size_t stringsQuantity = getStringsFromUser(strings);
     printStrings(strings, stringsQuantity);
     freeStrings(strings, stringsQuantity);
@@ -372,7 +372,7 @@ void test_getStringsFromUser()
 int main()
 {
     srand(time(NULL));
-    
+
     endless(UI);
 
     // test_swapStrings();
