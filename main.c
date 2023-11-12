@@ -305,7 +305,6 @@ void UI()
 
     char **strings = NULL;
     size_t stringsQuantity = getStrings(&strings, inputType);
-    printf("%c\n", strings[0][0]);
 
     printf("--- Input strings:\n");
     printStrings(strings, stringsQuantity);
