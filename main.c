@@ -125,7 +125,7 @@ void getOption(char *choice, const char *options, const char *prompt)
     } while (!isOptionValid(*choice, options));
 }
 
-bool isStringValid(char *input, size_t maxLength)
+bool isStringValid(char input[], size_t maxLength)
 {
     size_t inputLength = strlen(input);
     if (inputLength >= maxLength - 1)
@@ -141,7 +141,7 @@ bool isStringValid(char *input, size_t maxLength)
     return true;
 }
 
-void getString(char *string, size_t maxInputLength)
+void getString(char string[], size_t maxInputLength)
 {
     // to include \n and \0
     maxInputLength += 2;
