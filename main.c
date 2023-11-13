@@ -97,7 +97,7 @@ int sortStrings(char *strings[], size_t stringsQuantity, int order)
     return order;
 }
 
-void printStrings(char **strings, size_t stringsQuantity)
+void printStrings(char *strings[], size_t stringsQuantity)
 {
     for (int i = 0; i < stringsQuantity; i++)
     {
