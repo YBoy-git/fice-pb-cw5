@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <time.h>
 
-#define MAX_STRING_LENGTH 3
+#define MAX_STRING_LENGTH 100
 #define MAX_STRINGS_QUANTITY 100
 
 const char inputTypes[] = {'u', 'r', '\0'};
@@ -43,16 +43,29 @@ void getInput(void *input, char *format, const char *prompt)
     } while (temp != '\n');
 }
 
+bool wasMemoryAllocated(void *pointer)
+{
+    if (pointer == NULL)
+    {
+        printf("Memory allocation error\n");
+        exit(1);
+    }
+    return true;
+}
+
 void swapStrings(char *string1, char *string2)
 {
     size_t string1Length = strlen(string1);
     size_t string2Length = strlen(string2);
     size_t maxLength = (string1Length > string2Length) ? string1Length : string2Length;
 
-    char *temp = calloc(maxLength + 1, sizeof(char));
+    char *temp = malloc((maxLength + 1) * sizeof(char));
+    wasMemoryAllocated(temp);
 
     string1 = realloc(string1, (string2Length + 1) * sizeof(char));
+    wasMemoryAllocated(string1);
     string2 = realloc(string2, (string1Length + 1) * sizeof(char));
+    wasMemoryAllocated(string2);
 
     strcpy(temp, string1);
     strcpy(string1, string2);
@@ -150,6 +163,7 @@ size_t getStringsFromUser(char **strings)
 {
     size_t stringsQuantity = 0;
     char *input = malloc((MAX_STRING_LENGTH + 1) * sizeof(char));
+    wasMemoryAllocated(input);
 
     do
     {
@@ -165,6 +179,8 @@ size_t getStringsFromUser(char **strings)
         if (strlen(input) != 0)
         {
             strings[stringsQuantity] = malloc((strlen(input) + 1) * sizeof(char));
+            wasMemoryAllocated(strings[stringsQuantity]);
+
             strcpy(strings[stringsQuantity], input);
             stringsQuantity++;
         }
@@ -262,6 +278,8 @@ size_t getRandomStrings(char **strings, size_t stringsLength, size_t stringsQuan
     for (int i = 0; i < stringsQuantity; i++)
     {
         strings[i] = malloc((stringsLength + 1) * sizeof(char));
+        wasMemoryAllocated(strings[i]);
+
         generateRandomString(strings[i], stringsLength);
     }
 
@@ -274,11 +292,14 @@ size_t getStrings(char ***strings, char input)
     {
     case 'u':
         *strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
+        wasMemoryAllocated(*strings);
+
         return getStringsFromUser(*strings);
     case 'r':
         size_t stringsQuantity = 0;
         getStringsQuantity(&stringsQuantity);
         *strings = malloc(stringsQuantity * sizeof(char *));
+        wasMemoryAllocated(*strings);
 
         size_t stringsLength = 0;
         getStringsLength(&stringsLength);
