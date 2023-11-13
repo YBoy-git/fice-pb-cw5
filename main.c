@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <time.h>
+#include <math.h>
 
-#define MAX_STRING_LENGTH 100
-#define MAX_STRINGS_QUANTITY 100
+const int MAX_STRING_LENGTH = 100;
+const int MAX_STRINGS_QUANTITY = 100;
 
 const char inputTypes[] = {'u', 'r', '\0'};
 const char sortingTypes[] = {'a', 'd', '\0'};
@@ -57,7 +58,7 @@ void swapStrings(char *string1, char *string2)
 {
     size_t string1Length = strlen(string1);
     size_t string2Length = strlen(string2);
-    size_t maxLength = (string1Length > string2Length) ? string1Length : string2Length;
+    size_t maxLength = fmax(string1Length, string2Length);
 
     char *temp = malloc((maxLength + 1) * sizeof(char));
     wasMemoryAllocated(temp);
