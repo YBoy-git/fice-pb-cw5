@@ -127,6 +127,34 @@ void getOption(char *choice, const char *options, const char *prompt)
     } while (!isOptionValid(*choice, options));
 }
 
+bool isStringsQuantityValid(size_t stringsQuantity)
+{
+    if (stringsQuantity == 0)
+    {
+        printf("Can't generate 0 strings\n");
+        return false;
+    }
+    if (stringsQuantity > MAX_STRINGS_QUANTITY)
+    {
+        printf("Too many strings\n");
+        return false;
+    }
+
+    return true;
+}
+
+void getStringsQuantity(size_t *stringsQuantity)
+{
+    char prompt[70];
+    sprintf(prompt, "How many strings would you like to generate? (max %d): ", MAX_STRINGS_QUANTITY);
+    do
+    {
+        getInput(stringsQuantity, "%zu", prompt);
+    } while (!isStringsQuantityValid(*stringsQuantity));
+
+    return;
+}
+
 bool isStringValid(string_t input, size_t maxLength)
 {
     size_t inputLength = strlen(input);
@@ -169,39 +197,23 @@ void getString(string_t string, size_t maxInputLength)
 size_t getStringsFromUser(string_t strings[])
 {
     size_t stringsQuantity = 0;
-    string_t input = malloc((MAX_STRING_LENGTH + 1) * sizeof(char));
-    wasMemoryAllocated(input);
+    printf("Enter strings (max %d), type empty string to stop:\n", MAX_STRINGS_QUANTITY);
+    getStringsQuantity(&stringsQuantity);
 
-    do
+    // this static array is hardcoded, it's awful, but it's required by technical task
+    // the whole program initially was written without it, there were only dynamic arrays
+    char s_strings[stringsQuantity][MAX_STRING_LENGTH + 1];
+
+    for (int i = 0; i < stringsQuantity; i++)
     {
-        if (stringsQuantity > 0)
-        {
-            printf("You've entered %zu string(s)\n", stringsQuantity);
-        }
-        printf("Enter up to %d strings (with max length %d) or press ENTER to stop input \n", MAX_STRINGS_QUANTITY, MAX_STRING_LENGTH);
+        printf("%d: ", i + 1);
 
-        getString(input, MAX_STRING_LENGTH);
-        printf("\n");
+        getString(s_strings[i], MAX_STRING_LENGTH);
+        strings[i] = malloc((strlen(s_strings[i]) + 1) * sizeof(char));
+        wasMemoryAllocated(strings[i]);
 
-        if (strlen(input) != 0)
-        {
-            strings[stringsQuantity] = malloc((strlen(input) + 1) * sizeof(char));
-            wasMemoryAllocated(strings[stringsQuantity]);
-
-            strcpy(strings[stringsQuantity], input);
-            stringsQuantity++;
-        }
-
-        if (strlen(input) == 0 && stringsQuantity == 0)
-        {
-            printf("Please, pass at least 1 string\n");
-            continue;
-        }
-    } while ((strlen(input) != 0 && stringsQuantity < MAX_STRINGS_QUANTITY) || stringsQuantity == 0);
-
-    free(input);
-
-    return stringsQuantity;
+        strcpy(strings[i], s_strings[i]);
+    }
 }
 
 bool isStringsLengthValid(size_t stringsLength)
@@ -229,34 +241,6 @@ void getStringsLength(size_t *stringsLength)
     {
         getInput(stringsLength, "%zu", prompt);
     } while (!isStringsLengthValid(*stringsLength));
-
-    return;
-}
-
-bool isStringsQuantityValid(size_t stringsQuantity)
-{
-    if (stringsQuantity == 0)
-    {
-        printf("Can't generate 0 strings\n");
-        return false;
-    }
-    if (stringsQuantity > MAX_STRINGS_QUANTITY)
-    {
-        printf("Too many strings\n");
-        return false;
-    }
-
-    return true;
-}
-
-void getStringsQuantity(size_t *stringsQuantity)
-{
-    char prompt[70];
-    sprintf(prompt, "How many strings would you like to generate? (max %d): ", MAX_STRINGS_QUANTITY);
-    do
-    {
-        getInput(stringsQuantity, "%zu", prompt);
-    } while (!isStringsQuantityValid(*stringsQuantity));
 
     return;
 }
