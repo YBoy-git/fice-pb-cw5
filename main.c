@@ -77,7 +77,7 @@ void swapStrings(char string1[], char string2[])
 }
 
 // order = 1 for ascending, order = -1 for descending
-int sortStrings(char **strings, size_t stringsQuantity, int order)
+int sortStrings(char *strings[], size_t stringsQuantity, int order)
 {
     if (order == 0)
         return order;
