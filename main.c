@@ -54,7 +54,7 @@ bool wasMemoryAllocated(void *pointer)
     return true;
 }
 
-void swapStrings(char *string1, char *string2)
+void swapStrings(char string1[], char string2[])
 {
     size_t string1Length = strlen(string1);
     size_t string2Length = strlen(string2);
