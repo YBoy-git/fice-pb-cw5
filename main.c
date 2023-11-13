@@ -5,6 +5,8 @@
 #include <time.h>
 #include <math.h>
 
+typedef char* string_t;
+
 const int MAX_STRING_LENGTH = 100;
 const int MAX_STRINGS_QUANTITY = 100;
 
@@ -54,13 +56,13 @@ bool wasMemoryAllocated(void *pointer)
     return true;
 }
 
-void swapStrings(char string1[], char string2[])
+void swapStrings(string_t string1, string_t string2)
 {
     size_t string1Length = strlen(string1);
     size_t string2Length = strlen(string2);
     size_t maxLength = fmax(string1Length, string2Length);
 
-    char *temp = malloc((maxLength + 1) * sizeof(char));
+    string_t temp = malloc((maxLength + 1) * sizeof(char));
     wasMemoryAllocated(temp);
 
     string1 = realloc(string1, (string2Length + 1) * sizeof(char));
@@ -77,7 +79,7 @@ void swapStrings(char string1[], char string2[])
 }
 
 // order = 1 for ascending, order = -1 for descending
-int sortStrings(char *strings[], size_t stringsQuantity, int order)
+int sortStrings(string_t strings[], size_t stringsQuantity, int order)
 {
     if (order == 0)
         return order;
@@ -97,7 +99,7 @@ int sortStrings(char *strings[], size_t stringsQuantity, int order)
     return order;
 }
 
-void printStrings(char *strings[], size_t stringsQuantity)
+void printStrings(string_t strings[], size_t stringsQuantity)
 {
     for (int i = 0; i < stringsQuantity; i++)
     {
@@ -125,7 +127,7 @@ void getOption(char *choice, const char *options, const char *prompt)
     } while (!isOptionValid(*choice, options));
 }
 
-bool isStringValid(char input[], size_t maxLength)
+bool isStringValid(string_t input, size_t maxLength)
 {
     size_t inputLength = strlen(input);
     if (inputLength >= maxLength - 1)
@@ -141,12 +143,14 @@ bool isStringValid(char input[], size_t maxLength)
     return true;
 }
 
-void getString(char string[], size_t maxInputLength)
+void getString(string_t string, size_t maxInputLength)
 {
     // to include \n and \0
     maxInputLength += 2;
 
-    char input[maxInputLength];
+    string_t input = malloc(maxInputLength * sizeof(char));
+    wasMemoryAllocated(input);
+
     do
     {
         // max string length + \n + \0 in ideal string
@@ -156,14 +160,16 @@ void getString(char string[], size_t maxInputLength)
     input[strlen(input) - 1] = '\0';
     strcpy(string, input);
 
+    free(input);
+
     return;
 }
 
 // Returns quantity of input strings
-size_t getStringsFromUser(char **strings)
+size_t getStringsFromUser(string_t strings[])
 {
     size_t stringsQuantity = 0;
-    char *input = malloc((MAX_STRING_LENGTH + 1) * sizeof(char));
+    string_t input = malloc((MAX_STRING_LENGTH + 1) * sizeof(char));
     wasMemoryAllocated(input);
 
     do
@@ -263,7 +269,7 @@ char getRandomChar()
     return rand() % range + min;
 }
 
-void generateRandomString(char *string, size_t stringLength)
+void generateRandomString(string_t string, size_t stringLength)
 {
     for (int i = 0; i < stringLength; i++)
     {
@@ -274,7 +280,7 @@ void generateRandomString(char *string, size_t stringLength)
     return;
 }
 
-size_t getRandomStrings(char **strings, size_t stringsLength, size_t stringsQuantity)
+size_t getRandomStrings(string_t strings[], size_t stringsLength, size_t stringsQuantity)
 {
     for (int i = 0; i < stringsQuantity; i++)
     {
@@ -287,19 +293,19 @@ size_t getRandomStrings(char **strings, size_t stringsLength, size_t stringsQuan
     return stringsQuantity;
 }
 
-size_t getStrings(char ***strings, char input)
+size_t getStrings(string_t *strings[], char input)
 {
     switch (input)
     {
     case 'u':
-        *strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
+        *strings = malloc(MAX_STRINGS_QUANTITY * sizeof(string_t));
         wasMemoryAllocated(*strings);
 
         return getStringsFromUser(*strings);
     case 'r':
         size_t stringsQuantity = 0;
         getStringsQuantity(&stringsQuantity);
-        *strings = malloc(stringsQuantity * sizeof(char *));
+        *strings = malloc(stringsQuantity * sizeof(string_t));
         wasMemoryAllocated(*strings);
 
         size_t stringsLength = 0;
@@ -312,7 +318,7 @@ size_t getStrings(char ***strings, char input)
     }
 }
 
-void freeStrings(char **strings, size_t stringsQuantity)
+void freeStrings(string_t strings[], size_t stringsQuantity)
 {
     for (int i = 0; i < stringsQuantity; i++)
     {
@@ -326,7 +332,7 @@ void UI()
     char inputType = 0;
     getOption(&inputType, inputTypes, "Enter input type (u - user input, r - random): ");
 
-    char **strings = NULL;
+    string_t *strings = NULL;
     size_t stringsQuantity = getStrings(&strings, inputType);
 
     printf("--- Input strings:\n");
@@ -360,8 +366,8 @@ void endless(void (*function)())
 
 void test_swapStrings()
 {
-    char *str1 = malloc(10 * sizeof(char));
-    char *str2 = malloc(5 * sizeof(char));
+    string_t str1 = malloc(10 * sizeof(char));
+    string_t str2 = malloc(5 * sizeof(char));
     strcpy(str1, "123456789");
     strcpy(str2, "1234");
     swapStrings(str1, str2);
@@ -374,7 +380,7 @@ void test_swapStrings()
 
 void test_getString()
 {
-    char *string = malloc(11 * sizeof(char));
+    string_t string = malloc(11 * sizeof(char));
     getString(string, 10);
     printf("%s\n", string);
     free(string);
@@ -383,7 +389,7 @@ void test_getString()
 
 void test_getStringsFromUser()
 {
-    char **strings = malloc(MAX_STRINGS_QUANTITY * sizeof(char *));
+    string_t *strings = malloc(MAX_STRINGS_QUANTITY * sizeof(string_t));
 
     size_t stringsQuantity = getStringsFromUser(strings);
     printStrings(strings, stringsQuantity);
