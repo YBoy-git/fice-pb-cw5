@@ -214,6 +214,8 @@ size_t getStringsFromUser(string_t strings[])
 
         strcpy(strings[i], s_strings[i]);
     }
+
+    return stringsQuantity;
 }
 
 bool isStringsLengthValid(size_t stringsLength)
